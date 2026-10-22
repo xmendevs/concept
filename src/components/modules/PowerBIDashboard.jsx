@@ -74,9 +74,18 @@ export default function PowerBIDashboard({ vocData = [] }) {
     return `₦${num.toLocaleString()}`;
   };
 
+  // Dynamic Products List (Analyzes existing 5 or ANY newly imported products)
+  const availableProducts = useMemo(() => {
+    const set = new Set(ROSABON_PRODUCTS);
+    vocData.forEach(d => {
+      if (d.loanProduct) set.add(d.loanProduct);
+    });
+    return Array.from(set);
+  }, [vocData]);
+
   // Product-Level Performance Metrics
   const productMetrics = useMemo(() => {
-    return ROSABON_PRODUCTS.map(prod => {
+    return availableProducts.map(prod => {
       const records = vocData.filter(d => d.loanProduct === prod);
       const pTotal = records.length;
       const pProm = records.filter(d => d.npsCategory === 'Promoter').length;
@@ -284,8 +293,8 @@ export default function PowerBIDashboard({ vocData = [] }) {
                 fontSize: '0.775rem'
               }}
             >
-              <option value="all">All Rosabon Products (5)</option>
-              {ROSABON_PRODUCTS.map(p => (
+              <option value="all">All Rosabon Products ({availableProducts.length})</option>
+              {availableProducts.map(p => (
                 <option key={p} value={p}>{p}</option>
               ))}
             </select>

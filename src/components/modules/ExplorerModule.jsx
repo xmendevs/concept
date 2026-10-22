@@ -28,12 +28,16 @@ export default function ExplorerModule({ vocData, selectedItem, onSelectItem, on
   const [search, setSearch] = useState('');
   const [deptFilter, setDeptFilter] = useState('all');
   const [sentimentFilter, setSentimentFilter] = useState('all');
+  const [productFilter, setProductFilter] = useState('all');
   const [churnFilter, setChurnFilter] = useState(false);
+
+  const availableProducts = Array.from(new Set([...ROSABON_PRODUCTS, ...vocData.map(d => d.loanProduct).filter(Boolean)]));
 
   // Filter Logic
   const filtered = vocData.filter(item => {
     if (deptFilter !== 'all' && item.department !== deptFilter) return false;
     if (sentimentFilter !== 'all' && item.sentiment !== sentimentFilter) return false;
+    if (productFilter !== 'all' && item.loanProduct !== productFilter) return false;
     if (churnFilter && !item.churnRisk) return false;
 
     if (search.trim()) {
@@ -252,6 +256,27 @@ export default function ExplorerModule({ vocData, selectedItem, onSelectItem, on
                     {s === 'all' ? 'All' : s}
                   </button>
                 ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Product:</span>
+                <select
+                  value={productFilter}
+                  onChange={e => setProductFilter(e.target.value)}
+                  style={{
+                    background: 'var(--bg-surface-elevated)',
+                    border: '1px solid var(--border-medium)',
+                    color: 'var(--text-primary)',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '4px',
+                    fontSize: '0.75rem'
+                  }}
+                >
+                  <option value="all">All Products ({availableProducts.length})</option>
+                  {availableProducts.map(p => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
               </div>
 
               <div style={{ width: '1px', height: '16px', background: 'var(--border-subtle)' }} />
