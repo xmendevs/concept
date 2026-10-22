@@ -19,7 +19,7 @@ import { SAMPLE_SLA_QUERIES, COMPANY_PROFILE } from '../../data/mockData';
 import BoardroomDeck from './BoardroomDeck';
 import ProductStrategyHub from './ProductStrategyHub';
 
-export default function StudioModule({ vocData = [] }) {
+export default function StudioModule({ vocData = [], activeProduct = 'all', onChangeProduct }) {
   const [reportType, setReportType] = useState('sla_memo'); // 'sla_memo' | 'monthly_briefing' | 'product_strategy'
   const [selectedQuery, setSelectedQuery] = useState(SAMPLE_SLA_QUERIES[0] || {});
   const [customQuestion, setCustomQuestion] = useState('');
@@ -117,6 +117,20 @@ ${recommendedActions.map((a, i) => `• ${a}`).join('\n')}
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
             Produce fast under 48-hour ad-hoc memos, generate the monthly report, or present the boardroom slide deck.
           </p>
+
+          {/* Active Product Reporting Scope */}
+          {activeProduct !== 'all' && (
+            <div style={{ background: 'rgba(59, 130, 246, 0.12)', border: '1px solid var(--accent-primary)', padding: '0.35rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', color: 'var(--accent-primary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+              <span>📦 Scope: Reporting specifically for <strong>{activeProduct}</strong> ({total} records)</span>
+              <button
+                type="button"
+                onClick={() => onChangeProduct && onChangeProduct('all')}
+                style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', borderRadius: '4px', padding: '0.15rem 0.45rem', fontSize: '0.68rem', cursor: 'pointer' }}
+              >
+                Reset to All Products
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Studio Switcher & Option C Deck Trigger */}

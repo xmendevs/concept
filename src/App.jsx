@@ -1,11 +1,11 @@
-import React, { useState, useEffect, Component } from 'react';
+import React, { useState, useEffect, useMemo, Component } from 'react';
 import Header from './components/Header';
 import CaptureModule from './components/modules/CaptureModule';
 import ExplorerModule from './components/modules/ExplorerModule';
 import StudioModule from './components/modules/StudioModule';
 import TrackerModule from './components/modules/TrackerModule';
 import PowerBIDashboard from './components/modules/PowerBIDashboard';
-import { INITIAL_VOC_DATA } from './data/mockData';
+import { INITIAL_VOC_DATA, ROSABON_PRODUCTS } from './data/mockData';
 
 // Error Boundary to prevent any blank page crashes
 class ErrorBoundary extends Component {
@@ -49,6 +49,7 @@ export default function App() {
   const [activeModule, setActiveModule] = useState('capture');
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeMonth, setActiveMonth] = useState('October 2026');
+  const [activeProduct, setActiveProduct] = useState('all'); // 'all' | product name
 
   // Theme Management (Light vs Dark)
   const [theme, setTheme] = useState(() => {
@@ -67,6 +68,19 @@ export default function App() {
   // Sync VoC data with localStorage
   useEffect(() => {
     localStorage.setItem('rosabon_voc_records', JSON.stringify(vocData));
+  }, [vocData]);
+
+  // Dynamically load standard + custom products
+  const availableProducts = useMemo(() => {
+    const set = new Set(ROSABON_PRODUCTS);
+    try {
+      const custom = JSON.parse(localStorage.getItem('rosabon_custom_products') || '[]');
+      custom.forEach(c => set.add(c));
+    } catch (e) {}
+    vocData.forEach(d => {
+      if (d.loanProduct) set.add(d.loanProduct);
+    });
+    return Array.from(set);
   }, [vocData]);
 
   // Handlers
@@ -88,6 +102,7 @@ export default function App() {
   const handleClearAllVoC = () => {
     setVocData([]);
     setSelectedItem(null);
+    setActiveProduct('all');
   };
 
   const handleSelectVoC = (item) => {
@@ -99,38 +114,46 @@ export default function App() {
   const handleResetMonth = (action) => {
     if (action === 'Clear') {
       setVocData([]);
+      setActiveProduct('all');
     } else {
-      // Start new month (e.g. November 2026)
       setActiveMonth(action);
-      // Can start with empty or fresh records
     }
   };
 
   const handleRestoreSamples = () => {
     setVocData(INITIAL_VOC_DATA);
     setActiveMonth('October 2026');
+    setActiveProduct('all');
+    setSelectedItem(null);
   };
 
-  // Filter records by active month if specified
-  const filteredByMonth = activeMonth === 'All Time'
-    ? vocData
-    : vocData.filter(d => {
+  // Filter records by active month AND global active product
+  const filteredRecords = useMemo(() => {
+    return vocData.filter(d => {
+      // Month filter
+      if (activeMonth !== 'All Time') {
         if (!d.date) return true;
-        // October 2026 matches '2026-10'
-        if (activeMonth === 'October 2026') return d.date.startsWith('2026-10');
-        if (activeMonth === 'November 2026') return d.date.startsWith('2026-11');
-        if (activeMonth === 'December 2026') return d.date.startsWith('2026-12');
-        return true;
-      });
+        if (activeMonth === 'October 2026' && !d.date.startsWith('2026-10')) return false;
+        if (activeMonth === 'November 2026' && !d.date.startsWith('2026-11')) return false;
+        if (activeMonth === 'December 2026' && !d.date.startsWith('2026-12')) return false;
+      }
+      // Product Scope filter
+      if (activeProduct !== 'all' && d.loanProduct !== activeProduct) {
+        return false;
+      }
+      return true;
+    });
+  }, [vocData, activeMonth, activeProduct]);
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-app)', transition: 'background-color 0.2s ease' }}>
       
-      {/* 1. Header with Light/Dark toggle & Month Cycle Manager */}
+      {/* 1. Header with Light/Dark toggle, Month Cycle Manager & Global Product Scope */}
       <Header
         activeModule={activeModule}
         setActiveModule={setActiveModule}
-        vocCount={filteredByMonth.length}
+        vocCount={filteredRecords.length}
+        totalVocCount={vocData.length}
         onQuickLog={() => setActiveModule('capture')}
         theme={theme}
         toggleTheme={toggleTheme}
@@ -138,6 +161,9 @@ export default function App() {
         onChangeMonth={setActiveMonth}
         onResetMonth={handleResetMonth}
         onRestoreSamples={handleRestoreSamples}
+        activeProduct={activeProduct}
+        availableProducts={availableProducts}
+        onChangeProduct={setActiveProduct}
       />
 
       {/* 2. Main Workspace Container with Error Boundary */}
@@ -148,22 +174,64 @@ export default function App() {
         margin: '1.75rem auto 3rem auto', 
         padding: '0 1.5rem' 
       }}>
+        {/* Active Product Scope Banner when filtered */}
+        {activeProduct !== 'all' && (
+          <div style={{
+            background: 'rgba(59, 130, 246, 0.1)',
+            border: '1px solid var(--accent-primary)',
+            borderRadius: '8px',
+            padding: '0.6rem 1rem',
+            marginBottom: '1.25rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontSize: '0.8rem',
+            color: 'var(--text-primary)',
+            flexWrap: 'wrap',
+            gap: '0.5rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>🔍 Global Product Scope:</span>
+              <span>Showing intelligence exclusively for <strong>{activeProduct}</strong> ({filteredRecords.length} records in view)</span>
+            </div>
+            <button
+              onClick={() => setActiveProduct('all')}
+              style={{
+                background: 'var(--bg-surface-elevated)',
+                border: '1px solid var(--border-medium)',
+                color: 'var(--accent-primary)',
+                borderRadius: '5px',
+                padding: '0.2rem 0.65rem',
+                fontSize: '0.725rem',
+                cursor: 'pointer',
+                fontWeight: 600
+              }}
+            >
+              Reset to All Products
+            </button>
+          </div>
+        )}
+
         <ErrorBoundary>
           {activeModule === 'capture' && (
             <CaptureModule
-              vocData={filteredByMonth}
+              vocData={filteredRecords}
+              allVocData={vocData}
               onAddVoCItem={handleAddVoCItem}
               onBulkAdd={handleBulkAdd}
               onDeleteVoCItem={handleDeleteVoCItem}
               onClearAll={handleClearAllVoC}
               onRestoreSamples={handleRestoreSamples}
               onNavigate={setActiveModule}
+              activeProduct={activeProduct}
+              onChangeProduct={setActiveProduct}
             />
           )}
 
           {activeModule === 'explorer' && (
             <ExplorerModule
-              vocData={filteredByMonth}
+              vocData={filteredRecords}
+              allVocData={vocData}
               selectedItem={selectedItem}
               onSelectItem={setSelectedItem}
               onCloseDrawer={() => setSelectedItem(null)}
@@ -172,11 +240,18 @@ export default function App() {
               onRestoreSamples={handleRestoreSamples}
               onNavigateToCapture={() => setActiveModule('capture')}
               onNavigateToReports={() => setActiveModule('reports')}
+              activeProduct={activeProduct}
+              onChangeProduct={setActiveProduct}
+              availableProducts={availableProducts}
             />
           )}
 
           {activeModule === 'reports' && (
-            <StudioModule vocData={filteredByMonth} />
+            <StudioModule 
+              vocData={filteredRecords} 
+              activeProduct={activeProduct}
+              onChangeProduct={setActiveProduct}
+            />
           )}
 
           {activeModule === 'tracker' && (
@@ -184,7 +259,13 @@ export default function App() {
           )}
 
           {activeModule === 'powerbi' && (
-            <PowerBIDashboard vocData={filteredByMonth} />
+            <PowerBIDashboard 
+              vocData={filteredRecords} 
+              allVocData={vocData}
+              activeProduct={activeProduct}
+              onChangeProduct={setActiveProduct}
+              availableProducts={availableProducts}
+            />
           )}
         </ErrorBoundary>
       </main>

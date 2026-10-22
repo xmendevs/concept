@@ -29,12 +29,16 @@ import AdaptiveLearnerHub from './AdaptiveLearnerHub';
 
 export default function ExplorerModule({ 
   vocData, 
+  allVocData,
   selectedItem, 
   onSelectItem, 
   onCloseDrawer, 
   onDeleteItem,
   onClearAll,
   onRestoreSamples,
+  activeProduct = 'all',
+  onChangeProduct,
+  availableProducts: propProducts,
   onNavigateToCapture, 
   onNavigateToReports 
 }) {
@@ -42,9 +46,16 @@ export default function ExplorerModule({
   const [search, setSearch] = useState('');
   const [deptFilter, setDeptFilter] = useState('all');
   const [sentimentFilter, setSentimentFilter] = useState('all');
-  const [productFilter, setProductFilter] = useState('all');
+  const [productFilter, setProductFilter] = useState(activeProduct);
   const [churnFilter, setChurnFilter] = useState(false);
   const [exportNotice, setExportNotice] = useState('');
+
+  // Keep in sync with global product scope
+  useEffect(() => {
+    if (activeProduct) {
+      setProductFilter(activeProduct);
+    }
+  }, [activeProduct]);
 
   const [productsVer, setProductsVer] = useState(0);
 
@@ -389,7 +400,10 @@ export default function ExplorerModule({
                 <span style={{ color: 'var(--text-muted)' }}>Product:</span>
                 <select
                   value={productFilter}
-                  onChange={e => setProductFilter(e.target.value)}
+                  onChange={e => {
+                    setProductFilter(e.target.value);
+                    if (onChangeProduct) onChangeProduct(e.target.value);
+                  }}
                   style={{
                     background: 'var(--bg-surface-elevated)',
                     border: '1px solid var(--border-medium)',

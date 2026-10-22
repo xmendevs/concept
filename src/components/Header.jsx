@@ -12,7 +12,8 @@ import {
   RotateCcw,
   Sparkles,
   ChevronDown,
-  BarChart3
+  BarChart3,
+  Package
 } from 'lucide-react';
 import { COMPANY_PROFILE } from '../data/mockData';
 
@@ -20,6 +21,7 @@ export default function Header({
   activeModule, 
   setActiveModule, 
   vocCount, 
+  totalVocCount,
   onQuickLog,
   theme,
   toggleTheme,
@@ -27,7 +29,10 @@ export default function Header({
   availableMonths = ['October 2026', 'November 2026', 'December 2026', 'All Time'],
   onChangeMonth,
   onResetMonth,
-  onRestoreSamples
+  onRestoreSamples,
+  activeProduct = 'all',
+  availableProducts = [],
+  onChangeProduct
 }) {
   const [showMonthModal, setShowMonthModal] = useState(false);
 
@@ -127,9 +132,62 @@ export default function Header({
           })}
         </nav>
 
-        {/* Right Controls: Month Cycle Manager, Light/Dark Toggle, Quick Log */}
+        {/* Right Controls: Product Scope Selector, Month Cycle Manager, Light/Dark Toggle, Quick Log */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           
+          {/* Global Product Scope Selector */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            background: 'var(--bg-surface-elevated)',
+            border: activeProduct !== 'all' ? '1px solid var(--accent-primary)' : '1px solid var(--border-medium)',
+            borderRadius: '6px',
+            padding: '0.35rem 0.65rem',
+            transition: 'all 0.2s ease'
+          }}>
+            <Package size={13} color={activeProduct !== 'all' ? 'var(--accent-primary)' : 'var(--text-muted)'} />
+            <select
+              value={activeProduct}
+              onChange={(e) => onChangeProduct && onChangeProduct(e.target.value)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: activeProduct !== 'all' ? 'var(--accent-primary)' : 'var(--text-primary)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                outline: 'none',
+                maxWidth: '185px'
+              }}
+              title="Filter customer intelligence across all views by product line"
+            >
+              <option value="all">Scope: All Products ({availableProducts.length})</option>
+              {availableProducts.map(p => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+            {activeProduct !== 'all' && (
+              <button
+                type="button"
+                onClick={() => onChangeProduct && onChangeProduct('all')}
+                title="Reset scope to All Products"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--accent-rose)',
+                  cursor: 'pointer',
+                  padding: '0 0.15rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 800,
+                  lineHeight: 1
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
           {/* Active Cycle Button */}
           <button
             onClick={() => setShowMonthModal(true)}
@@ -262,16 +320,49 @@ export default function Header({
               </div>
             </div>
 
-            {/* Reset / New Month Actions */}
-            <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+            {/* Reset / Start from Beginning Options */}
+            <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
               <span style={{ fontSize: '0.725rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                Cycle Maintenance & Reset
+                Reset & Start From Beginning:
               </span>
+
+              {/* Option A: Wipe to 0 Rows (Blank Canvas) */}
+              <button
+                className="btn-clean btn-clean-secondary"
+                onClick={() => {
+                  if (confirm(`Clear all records to 0 rows?\n\nThis wipes all transactions so you can start completely from scratch with a blank canvas.`)) {
+                    onResetMonth('Clear');
+                    if (onChangeProduct) onChangeProduct('all');
+                    setShowMonthModal(false);
+                  }
+                }}
+                style={{ justifyContent: 'flex-start', fontSize: '0.775rem', color: 'var(--accent-rose)' }}
+                title="Wipe all transactions to 0 for a clean intake test"
+              >
+                <RotateCcw size={14} color="var(--accent-rose)" />
+                Clear All Records to 0 (Blank Canvas State)
+              </button>
+
+              {/* Option B: Restore Factory Benchmark Data */}
+              <button
+                className="btn-clean btn-clean-secondary"
+                onClick={() => {
+                  if (confirm(`Restore factory default records?\n\nThis resets the app back to the very beginning with 10 standard Rosabon benchmark customer records (October 2026).`)) {
+                    onRestoreSamples();
+                    if (onChangeProduct) onChangeProduct('all');
+                    setShowMonthModal(false);
+                  }
+                }}
+                style={{ justifyContent: 'flex-start', fontSize: '0.775rem', color: 'var(--accent-emerald)' }}
+                title="Restore default benchmark records"
+              >
+                ✓ Restore Factory Baseline (10 Benchmark Records)
+              </button>
 
               <button
                 className="btn-clean btn-clean-secondary"
                 onClick={() => {
-                  if (confirm(`Start a fresh cycle for next month? Current records will remain accessible under archive.`)) {
+                  if (confirm(`Start a fresh cycle for next month (November 2026)? Current records will remain accessible under archive.`)) {
                     onResetMonth('November 2026');
                     setShowMonthModal(false);
                   }
@@ -280,31 +371,6 @@ export default function Header({
               >
                 <Sparkles size={14} color="var(--accent-primary)" />
                 Start Fresh Next Month (November 2026)
-              </button>
-
-              <button
-                className="btn-clean btn-clean-secondary"
-                onClick={() => {
-                  if (confirm(`Clear all current month records to 0 for a clean test?`)) {
-                    onResetMonth('Clear');
-                    setShowMonthModal(false);
-                  }
-                }}
-                style={{ justifyContent: 'flex-start', fontSize: '0.775rem', color: 'var(--accent-rose)' }}
-              >
-                <RotateCcw size={14} color="var(--accent-rose)" />
-                Clear Current Month Records (Blank State)
-              </button>
-
-              <button
-                className="btn-clean btn-clean-secondary"
-                onClick={() => {
-                  onRestoreSamples();
-                  setShowMonthModal(false);
-                }}
-                style={{ justifyContent: 'flex-start', fontSize: '0.775rem', color: 'var(--accent-emerald)' }}
-              >
-                ✓ Restore Full Rosabon Sample Records (10 items)
               </button>
             </div>
 

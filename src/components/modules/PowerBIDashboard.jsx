@@ -25,9 +25,15 @@ import {
 } from 'lucide-react';
 import { ROSABON_PRODUCTS, DEPARTMENTS } from '../../data/mockData';
 
-export default function PowerBIDashboard({ vocData = [] }) {
+export default function PowerBIDashboard({ 
+  vocData = [], 
+  allVocData, 
+  activeProduct = 'all', 
+  onChangeProduct,
+  availableProducts: propProducts 
+}) {
   // Slicer States (PowerBI Interactive Filtering)
-  const [selectedProduct, setSelectedProduct] = useState('all');
+  const [selectedProduct, setSelectedProduct] = useState(activeProduct);
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedSentiment, setSelectedSentiment] = useState('all');
   const [churnOnly, setChurnOnly] = useState(false);
@@ -35,6 +41,13 @@ export default function PowerBIDashboard({ vocData = [] }) {
   const [showDaxModal, setShowDaxModal] = useState(false);
   const [exportNotice, setExportNotice] = useState('');
   const [productsVer, setProductsVer] = useState(0);
+
+  // Sync with global product scope
+  useEffect(() => {
+    if (activeProduct) {
+      setSelectedProduct(activeProduct);
+    }
+  }, [activeProduct]);
 
   useEffect(() => {
     const handleUpdate = () => setProductsVer(v => v + 1);
@@ -174,6 +187,7 @@ export default function PowerBIDashboard({ vocData = [] }) {
     setSelectedDepartment('all');
     setSelectedSentiment('all');
     setChurnOnly(false);
+    if (onChangeProduct) onChangeProduct('all');
   };
 
   return (
@@ -293,7 +307,10 @@ export default function PowerBIDashboard({ vocData = [] }) {
             </label>
             <select
               value={selectedProduct}
-              onChange={(e) => setSelectedProduct(e.target.value)}
+              onChange={(e) => {
+                setSelectedProduct(e.target.value);
+                if (onChangeProduct) onChangeProduct(e.target.value);
+              }}
               style={{
                 width: '100%',
                 padding: '0.4rem 0.6rem',
