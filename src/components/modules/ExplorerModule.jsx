@@ -15,7 +15,8 @@ import {
   Brain,
   MessageSquare,
   Target,
-  Sparkles
+  Sparkles,
+  CheckCircle2
 } from 'lucide-react';
 import { DEPARTMENTS, ROSABON_PRODUCTS } from '../../data/mockData';
 import CompetitorRadar from './CompetitorRadar';
@@ -30,6 +31,7 @@ export default function ExplorerModule({ vocData, selectedItem, onSelectItem, on
   const [sentimentFilter, setSentimentFilter] = useState('all');
   const [productFilter, setProductFilter] = useState('all');
   const [churnFilter, setChurnFilter] = useState(false);
+  const [exportNotice, setExportNotice] = useState('');
 
   const [productsVer, setProductsVer] = useState(0);
 
@@ -67,6 +69,71 @@ export default function ExplorerModule({ vocData, selectedItem, onSelectItem, on
     }
     return true;
   });
+
+  // REAL CSV EXPORT HANDLER
+  const handleExportCsv = () => {
+    if (!filtered || filtered.length === 0) return;
+
+    const headers = [
+      'Ticket ID',
+      'Customer / Company Name',
+      'Customer Segment',
+      'Department',
+      'Channel',
+      'Rosabon Product Line',
+      'Exposure Amount (NGN)',
+      'Date Logged',
+      'Sentiment',
+      'Sentiment Score (-1 to +1)',
+      'NPS Category',
+      'NPS Rating (0-10)',
+      'CSAT Score (1-5)',
+      'CES Effort Score (1-7)',
+      'Urgency Level',
+      'Churn Flight Risk',
+      'Resolution Status',
+      'Action Owner',
+      'Operational Themes',
+      'Customer Verbatim Remarks'
+    ];
+
+    const rows = filtered.map(item => [
+      `"${(item.id || '').replace(/"/g, '""')}"`,
+      `"${(item.customerName || '').replace(/"/g, '""')}"`,
+      `"${(item.customerTier || '').replace(/"/g, '""')}"`,
+      `"${(item.department || '').replace(/"/g, '""')}"`,
+      `"${(item.channel || '').replace(/"/g, '""')}"`,
+      `"${(item.loanProduct || '').replace(/"/g, '""')}"`,
+      `"${(item.loanAmount || '').replace(/"/g, '""')}"`,
+      `"${(item.date || '').replace(/"/g, '""')}"`,
+      `"${(item.sentiment || '').replace(/"/g, '""')}"`,
+      item.sentimentScore ?? '',
+      `"${(item.npsCategory || '').replace(/"/g, '""')}"`,
+      item.npsScore ?? '',
+      item.csatScore ?? '',
+      item.cesScore ?? '',
+      `"${(item.urgency || '').replace(/"/g, '""')}"`,
+      item.churnRisk ? 'TRUE' : 'FALSE',
+      `"${(item.status || '').replace(/"/g, '""')}"`,
+      `"${(item.actionOwner || '').replace(/"/g, '""')}"`,
+      `"${(Array.isArray(item.themes) ? item.themes.join('; ') : (item.themes || '')).replace(/"/g, '""')}"`,
+      `"${(item.qualitativeText || '').replace(/"/g, '""')}"`
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Rosabon_Customer_Voices_Export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    setExportNotice(`Successfully exported ${filtered.length} customer records to CSV! File downloaded.`);
+    setTimeout(() => setExportNotice(''), 4500);
+  };
 
   return (
     <div className="animate-module" style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative' }}>
@@ -311,12 +378,19 @@ export default function ExplorerModule({ vocData, selectedItem, onSelectItem, on
 
               <button 
                 className="btn-clean btn-clean-secondary"
-                onClick={() => alert(`Exported ${filtered.length} records to CSV`)}
-                style={{ marginLeft: 'auto', fontSize: '0.75rem', padding: '0.3rem 0.65rem' }}
+                onClick={handleExportCsv}
+                style={{ marginLeft: 'auto', fontSize: '0.75rem', padding: '0.35rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}
+                title="Download filtered records as CSV spreadsheet"
               >
                 <Download size={13} /> Export CSV ({filtered.length})
               </button>
             </div>
+
+            {exportNotice && (
+              <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid var(--accent-teal)', color: 'var(--accent-teal)', padding: '0.5rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.5rem' }}>
+                <CheckCircle2 size={14} /> {exportNotice}
+              </div>
+            )}
 
           </div>
 

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import { 
   Inbox, 
   UploadCloud, 
@@ -51,6 +52,11 @@ export default function CaptureModule({ vocData, onAddVoCItem, onBulkAdd, defaul
     window.addEventListener('rosabon_products_updated', handleProductsUpdated);
     return () => window.removeEventListener('rosabon_products_updated', handleProductsUpdated);
   }, []);
+
+  // Drag and Drop & File Upload State
+  const [isDragging, setIsDragging] = useState(false);
+  const [isProcessingFile, setIsProcessingFile] = useState(false);
+  const fileInputRef = useRef(null);
 
   // Quick RM Form State
   const [formData, setFormData] = useState({
@@ -157,6 +163,265 @@ export default function CaptureModule({ vocData, onAddVoCItem, onBulkAdd, defaul
     onBulkAdd(mockBatch);
     setNotification(`Imported batch of 2 new customer feedback records.`);
     setTimeout(() => setNotification(''), 4000);
+  };
+
+  // DRAG & DROP AND FILE PROCESSING ENGINE
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      handleProcessFile(files[0]);
+    }
+  };
+
+  const handleFileInputChange = (e) => {
+    const files = e.target?.files;
+    if (files && files.length > 0) {
+      handleProcessFile(files[0]);
+    }
+  };
+
+  const handleProcessFile = (file) => {
+    if (!file) return;
+    setIsProcessingFile(true);
+
+    const fileName = file.name;
+    const isCsvOrTxt = fileName.toLowerCase().endsWith('.csv') || fileName.toLowerCase().endsWith('.tsv') || fileName.toLowerCase().endsWith('.txt');
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        let rows = [];
+
+        if (isCsvOrTxt) {
+          const text = e.target.result;
+          const workbook = XLSX.read(text, { type: 'string' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        } else {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        }
+
+        if (!rows || rows.length < 2) {
+          setNotification(`File "${fileName}" contains no data rows or could not be parsed.`);
+          setIsProcessingFile(false);
+          setTimeout(() => setNotification(''), 4500);
+          return;
+        }
+
+        const headers = rows[0].map(h => String(h || '').trim().toLowerCase());
+        const dataRows = rows.slice(1).filter(r => r && r.some(cell => String(cell || '').trim() !== ''));
+
+        // Smart column mapping
+        const findCol = (...keywords) => {
+          return headers.findIndex(h => keywords.some(k => h.includes(k)));
+        };
+
+        const custCol = findCol('customer', 'client', 'name', 'borrower', 'company');
+        const textCol = findCol('text', 'feedback', 'verbatim', 'comment', 'remark', 'quote', 'note', 'debrief', 'description', 'message');
+        const prodCol = findCol('product', 'loan product', 'facility', 'service');
+        const deptCol = findCol('dept', 'department', 'unit', 'source');
+        const amountCol = findCol('amount', 'exposure', 'value', 'loan amount', 'disbursed');
+        const sentCol = findCol('sentiment', 'polarity');
+        const npsCol = findCol('nps', 'promoter', 'rating', 'score');
+        const csatCol = findCol('csat');
+        const cesCol = findCol('ces', 'effort');
+        const urgencyCol = findCol('urgency', 'priority');
+        const churnCol = findCol('churn', 'flight', 'risk', 'defection');
+        const dateCol = findCol('date', 'time', 'timestamp');
+
+        // PII Scrubber
+        const sanitizeText = (txt) => {
+          let s = String(txt || '');
+          s = s.replace(/\b(\d{7})(\d{4})\b/g, '[BVN REDACTED: *******$2]');
+          s = s.replace(/\b(?:\d{4}[ -]?){3}(\d{4})\b/g, '[CARD REDACTED: ****-****-****-$1]');
+          return s;
+        };
+
+        const parsedItems = dataRows.map((row, idx) => {
+          const rawText = textCol >= 0 && row[textCol] ? String(row[textCol]) : row.join(' | ');
+          const sanitized = sanitizeText(rawText);
+
+          // Sentiment detection
+          let sentiment = 'Neutral';
+          if (sentCol >= 0 && row[sentCol]) {
+            const val = String(row[sentCol]).toLowerCase();
+            if (val.includes('pos')) sentiment = 'Positive';
+            else if (val.includes('neg')) sentiment = 'Negative';
+          } else {
+            const lower = sanitized.toLowerCase();
+            if (lower.includes('delay') || lower.includes('bottleneck') || lower.includes('threat') || lower.includes('complain') || lower.includes('bug') || lower.includes('failed') || lower.includes('slow')) {
+              sentiment = 'Negative';
+            } else if (lower.includes('great') || lower.includes('fast') || lower.includes('excellent') || lower.includes('smooth') || lower.includes('impressive')) {
+              sentiment = 'Positive';
+            }
+          }
+
+          const rawNps = npsCol >= 0 ? parseInt(row[npsCol], 10) : NaN;
+          const npsScore = !isNaN(rawNps) ? Math.min(10, Math.max(0, rawNps)) : (sentiment === 'Positive' ? 9 : sentiment === 'Negative' ? 2 : 7);
+
+          const rawCsat = csatCol >= 0 ? parseInt(row[csatCol], 10) : NaN;
+          const csatScore = !isNaN(rawCsat) ? Math.min(5, Math.max(1, rawCsat)) : (sentiment === 'Positive' ? 5 : sentiment === 'Negative' ? 2 : 4);
+
+          const rawCes = cesCol >= 0 ? parseInt(row[cesCol], 10) : NaN;
+          const cesScore = !isNaN(rawCes) ? Math.min(7, Math.max(1, rawCes)) : (sentiment === 'Negative' ? 6 : 2);
+
+          const isChurn = churnCol >= 0 
+            ? String(row[churnCol]).toLowerCase().includes('true') || String(row[churnCol]).toLowerCase().includes('yes') || String(row[churnCol]).toLowerCase().includes('high')
+            : (sentiment === 'Negative' && (sanitized.toLowerCase().includes('switch') || sanitized.toLowerCase().includes('bank') || sanitized.toLowerCase().includes('competitor') || sanitized.toLowerCase().includes('liquidate')));
+
+          const customer = custCol >= 0 && row[custCol] ? String(row[custCol]).trim() : `Client Account ${idx + 1}`;
+          const product = prodCol >= 0 && row[prodCol] ? String(row[prodCol]).trim() : ROSABON_PRODUCTS[idx % ROSABON_PRODUCTS.length];
+          const department = deptCol >= 0 && row[deptCol] ? String(row[deptCol]).trim() : 'sales_rm';
+          const amount = amountCol >= 0 && row[amountCol] ? (String(row[amountCol]).startsWith('₦') ? String(row[amountCol]) : `₦${row[amountCol]}`) : '₦15,000,000';
+          const date = dateCol >= 0 && row[dateCol] ? String(row[dateCol]).trim() : new Date().toISOString().split('T')[0];
+
+          return {
+            id: `VOC-FILE-${Math.floor(1000 + Math.random() * 9000)}`,
+            customerName: customer,
+            customerTier: 'Commercial SME (Tier 1)',
+            department: department,
+            channel: `File Upload (${fileName})`,
+            loanProduct: product,
+            loanAmount: amount,
+            date: date,
+            qualitativeText: sanitized,
+            sentiment: sentiment,
+            sentimentScore: sentiment === 'Positive' ? 0.85 : sentiment === 'Negative' ? -0.85 : 0.0,
+            urgency: urgencyCol >= 0 && row[urgencyCol] ? String(row[urgencyCol]) : (sentiment === 'Negative' ? 'High' : 'Low'),
+            churnRisk: isChurn,
+            npsCategory: npsScore >= 9 ? 'Promoter' : npsScore >= 7 ? 'Passive' : 'Detractor',
+            npsScore: npsScore,
+            csatScore: csatScore,
+            cesScore: cesScore,
+            themes: [THEMES[idx % THEMES.length]],
+            status: isChurn ? 'Action Required' : 'Logged',
+            actionOwner: 'Customer Intelligence Lead'
+          };
+        });
+
+        onBulkAdd(parsedItems);
+        setIsProcessingFile(false);
+        setNotification(`Successfully ingested ${parsedItems.length} records from "${fileName}"! PII scrubbed & indexed into database.`);
+        setTimeout(() => setNotification(''), 5500);
+
+      } catch (err) {
+        console.error('File parsing error:', err);
+        setIsProcessingFile(false);
+        setNotification(`Error parsing "${fileName}". Please check file format.`);
+        setTimeout(() => setNotification(''), 4500);
+      }
+    };
+
+    if (isCsvOrTxt) {
+      reader.readAsText(file);
+    } else {
+      reader.readAsArrayBuffer(file);
+    }
+  };
+
+  // REAL CSV TEMPLATE GENERATOR
+  const handleDownloadTemplate = () => {
+    const templateHeaders = [
+      'Customer Name',
+      'Customer Tier',
+      'Department',
+      'Loan Product',
+      'Loan Amount',
+      'Date',
+      'Customer Verbatim',
+      'Sentiment',
+      'NPS Score',
+      'CSAT Score',
+      'CES Score',
+      'Urgency',
+      'Churn Risk'
+    ];
+
+    const sampleRows = [
+      [
+        'Apex Haulage Logistics Ltd',
+        'Commercial Fleet Client (Tier 1)',
+        'sales_rm',
+        'Rosabon SME Working Capital Loan',
+        '₦45,000,000',
+        '2026-10-15',
+        'Requested 48h fast-track credit committee clearance to purchase 4 refrigerated trucks. Excellent support from RM.',
+        'Positive',
+        '9',
+        '5',
+        '2',
+        'Medium',
+        'FALSE'
+      ],
+      [
+        'Dr. Chinedu Okafor',
+        'Healthcare SME Corporate',
+        'credit_risk',
+        'Rosabon Consumer Asset Lease (Vehicle/Equipment)',
+        '₦25,000,000',
+        '2026-10-18',
+        'Ultrasound machine appraisal took 11 days. Had to explain clinic equipment specs 3 times to different officers.',
+        'Negative',
+        '2',
+        '2',
+        '6',
+        'Critical',
+        'TRUE'
+      ],
+      [
+        'Folake Adeleke',
+        'Retail Salary Earner',
+        'cx',
+        'Rosabon Quick Cash (Instant Salary Advance)',
+        '₦350,000',
+        '2026-10-20',
+        'Instant mobile emergency loan received in 20 minutes without physical branch visit.',
+        'Positive',
+        '10',
+        '5',
+        '1',
+        'Low',
+        'FALSE'
+      ]
+    ];
+
+    const csvContent = '\uFEFF' + [templateHeaders.join(','), ...sampleRows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'Rosabon_VoC_Standard_Ingestion_Template.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    setNotification('Downloaded Rosabon_VoC_Standard_Ingestion_Template.csv! Fill and drag back to upload.');
+    setTimeout(() => setNotification(''), 4500);
   };
 
   // GOOGLE SHEETS & CLOUD DRIVE SYNC HANDLER
@@ -647,33 +912,55 @@ export default function CaptureModule({ vocData, onAddVoCItem, onBulkAdd, defaul
             </p>
           </div>
 
-          <div style={{
-            border: '2px dashed var(--accent-primary)',
-            borderRadius: '12px',
-            background: 'var(--bg-surface-elevated)',
-            padding: '2.5rem 1.5rem',
-            textAlign: 'center'
-          }}>
-            <UploadCloud size={36} color="var(--accent-primary)" style={{ margin: '0 auto 0.75rem auto' }} />
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-              Drag & Drop your CSV or Excel Spreadsheet here
+          <div 
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              border: `2px dashed ${isDragging ? 'var(--accent-teal)' : 'var(--accent-primary)'}`,
+              borderRadius: '12px',
+              background: isDragging ? 'rgba(59, 130, 246, 0.15)' : 'var(--bg-surface-elevated)',
+              padding: '2.5rem 1.5rem',
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".csv,.xlsx,.xls,.tsv,.txt"
+              onChange={handleFileInputChange}
+              style={{ display: 'none' }}
+            />
+            <UploadCloud size={40} color={isDragging ? 'var(--accent-teal)' : 'var(--accent-primary)'} style={{ margin: '0 auto 0.75rem auto' }} />
+            <h4 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              {isProcessingFile 
+                ? 'Processing & Sanitizing Spreadsheet...' 
+                : isDragging 
+                  ? 'Drop your CSV or Excel file right here!' 
+                  : 'Drag & Drop your CSV or Excel Spreadsheet (.xlsx, .xls, .csv)'}
             </h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-              The auto-mapper automatically recognizes columns for customer, feedback, rating, date, and product.
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
+              Or click anywhere in this box to browse files on your computer. Multi-column schemas are automatically recognized.
             </p>
 
-            <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'center', gap: '0.75rem' }}>
+            <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button 
+                type="button"
                 className="btn-clean btn-clean-secondary"
-                onClick={handleSimulateBatch}
-                style={{ fontSize: '0.8rem' }}
+                onClick={(e) => { e.stopPropagation(); handleSimulateBatch(); }}
+                style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
               >
                 <RefreshCw size={14} /> Simulate 2 Batch Items
               </button>
               <button 
+                type="button"
                 className="btn-clean btn-clean-secondary"
-                onClick={() => alert('Downloading Rosabon_VoC_Standard_Template.csv')}
-                style={{ fontSize: '0.8rem' }}
+                onClick={(e) => { e.stopPropagation(); handleDownloadTemplate(); }}
+                style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
               >
                 <Download size={14} /> Download Clean Template (.csv)
               </button>
