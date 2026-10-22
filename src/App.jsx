@@ -157,6 +157,7 @@ export default function App() {
               onDeleteVoCItem={handleDeleteVoCItem}
               onClearAll={handleClearAllVoC}
               onRestoreSamples={handleRestoreSamples}
+              onNavigate={setActiveModule}
             />
           )}
 

@@ -32,9 +32,13 @@ export default function CaptureModule({
   onDeleteVoCItem,
   onClearAll,
   onRestoreSamples,
+  onNavigate,
   defaultSubTab = 'form' 
 }) {
   const [activeMode, setActiveMode] = useState(defaultSubTab); // 'form' | 'upload' | 'sheets' | 'sanitizer' | 'health'
+
+  // POST-INGESTION BATCH REPORT & LAUNCHPAD STATE
+  const [recentBatchSummary, setRecentBatchSummary] = useState(null);
 
   // GOOGLE SHEETS & DRIVE SYNC STATE
   const [sheetUrl, setSheetUrl] = useState('https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit#gid=0');
@@ -171,6 +175,17 @@ export default function CaptureModule({
     ];
 
     onBulkAdd(mockBatch);
+    const summary = {
+      fileName: 'Simulated RM Batch (2 records)',
+      timestamp: new Date().toLocaleTimeString(),
+      count: mockBatch.length,
+      promoters: mockBatch.filter(p => p.sentiment === 'Positive').length,
+      neutrals: mockBatch.filter(p => p.sentiment === 'Neutral').length,
+      detractors: mockBatch.filter(p => p.sentiment === 'Negative').length,
+      churnRisks: mockBatch.filter(p => p.churnRisk).length,
+      items: mockBatch
+    };
+    setRecentBatchSummary(summary);
     setNotification(`Imported batch of 2 new customer feedback records.`);
     setTimeout(() => setNotification(''), 4000);
   };
@@ -334,6 +349,17 @@ export default function CaptureModule({
         });
 
         onBulkAdd(parsedItems);
+        const summary = {
+          fileName,
+          timestamp: new Date().toLocaleTimeString(),
+          count: parsedItems.length,
+          promoters: parsedItems.filter(p => p.sentiment === 'Positive').length,
+          neutrals: parsedItems.filter(p => p.sentiment === 'Neutral').length,
+          detractors: parsedItems.filter(p => p.sentiment === 'Negative').length,
+          churnRisks: parsedItems.filter(p => p.churnRisk).length,
+          items: parsedItems.slice(0, 5)
+        };
+        setRecentBatchSummary(summary);
         setIsProcessingFile(false);
         setNotification(`Successfully ingested ${parsedItems.length} records from "${fileName}"! PII scrubbed & indexed into database.`);
         setTimeout(() => setNotification(''), 5500);
@@ -1048,6 +1074,139 @@ export default function CaptureModule({
               </button>
             </div>
           </div>
+
+          {/* POST-INGESTION LAUNCHPAD & BATCH INTELLIGENCE SUMMARY */}
+          {recentBatchSummary && (
+            <div style={{
+              marginTop: '1.25rem',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--accent-primary)',
+              borderRadius: '12px',
+              padding: '1.25rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-emerald)', fontSize: '0.75rem', fontWeight: 700 }}>
+                    <CheckCircle2 size={16} /> BATCH INGESTED & INDEXED AT {recentBatchSummary.timestamp}
+                  </div>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '0.2rem' }}>
+                    {recentBatchSummary.count} Records Ingested from "{recentBatchSummary.fileName}"
+                  </h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                    Sensitive PII (BVNs, Account Numbers, Card PANs) sanitized for NDPR compliance. Sentiment & NPS categorized.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setRecentBatchSummary(null)}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}
+                  title="Dismiss summary"
+                >
+                  ✕ Dismiss
+                </button>
+              </div>
+
+              {/* Metric Chips */}
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <span className="badge-clean badge-green" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}>
+                  ✓ {recentBatchSummary.promoters} Positive
+                </span>
+                <span className="badge-clean badge-yellow" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}>
+                  • {recentBatchSummary.neutrals} Neutral
+                </span>
+                <span className="badge-clean badge-red" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}>
+                  ✕ {recentBatchSummary.detractors} Negative
+                </span>
+                {recentBatchSummary.churnRisks > 0 && (
+                  <span className="badge-clean badge-red" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid var(--accent-rose)' }}>
+                    <AlertCircle size={13} /> {recentBatchSummary.churnRisks} Flight Risks Flagged
+                  </span>
+                )}
+              </div>
+
+              {/* WHAT TO DO NEXT - DIRECT MODULE LAUNCHPAD */}
+              <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.85rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-primary)', display: 'block', marginBottom: '0.5rem' }}>
+                  What happens next? Launch analysis across the platform:
+                </span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.65rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate && onNavigate('explorer')}
+                    className="btn-clean btn-clean-primary"
+                    style={{ justifyContent: 'center', fontSize: '0.8rem', padding: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                  >
+                    <span>🔍 View Rows in Customer Voices (Module 2)</span>
+                    <ArrowRight size={14} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onNavigate && onNavigate('powerbi')}
+                    className="btn-clean btn-clean-secondary"
+                    style={{ justifyContent: 'center', fontSize: '0.8rem', padding: '0.65rem', border: '1px solid var(--accent-primary)', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                  >
+                    <span>📊 Open PowerBI Studio (Module 5)</span>
+                    <ArrowRight size={14} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onNavigate && onNavigate('reports')}
+                    className="btn-clean btn-clean-secondary"
+                    style={{ justifyContent: 'center', fontSize: '0.8rem', padding: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                  >
+                    <span>📑 Build Executive Memo (Module 3)</span>
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Ingestion Preview Table */}
+              {recentBatchSummary.items && recentBatchSummary.items.length > 0 && (
+                <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem' }}>
+                  <span style={{ fontSize: '0.725rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                    Preview of Ingested Records (First {recentBatchSummary.items.length}):
+                  </span>
+                  <div style={{ overflowX: 'auto', marginTop: '0.4rem' }}>
+                    <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse', textAlign: 'left' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
+                          <th style={{ padding: '0.4rem' }}>Client / Company</th>
+                          <th style={{ padding: '0.4rem' }}>Loan Product</th>
+                          <th style={{ padding: '0.4rem' }}>Exposure</th>
+                          <th style={{ padding: '0.4rem' }}>Sentiment</th>
+                          <th style={{ padding: '0.4rem' }}>Verbatim Excerpt</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {recentBatchSummary.items.map(item => (
+                          <tr key={item.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                            <td style={{ padding: '0.45rem', fontWeight: 600, color: 'var(--text-primary)' }}>{item.customerName}</td>
+                            <td style={{ padding: '0.45rem', color: 'var(--accent-primary)' }}>{item.loanProduct}</td>
+                            <td style={{ padding: '0.45rem', color: 'var(--accent-emerald)', fontWeight: 600 }}>{item.loanAmount}</td>
+                            <td style={{ padding: '0.45rem' }}>
+                              <span className={`badge-clean ${item.sentiment === 'Positive' ? 'badge-green' : item.sentiment === 'Neutral' ? 'badge-yellow' : 'badge-red'}`} style={{ fontSize: '0.65rem' }}>
+                                {item.sentiment}
+                              </span>
+                            </td>
+                            <td style={{ padding: '0.45rem', color: 'var(--text-secondary)', maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              "{item.qualitativeText}"
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
