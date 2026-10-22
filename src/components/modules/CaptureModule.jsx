@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Inbox, 
   UploadCloud, 
@@ -30,6 +30,27 @@ export default function CaptureModule({ vocData, onAddVoCItem, onBulkAdd, defaul
   const [isSyncingSheets, setIsSyncingSheets] = useState(false);
   const [sheetSyncStatus, setSheetSyncStatus] = useState(null);
   const [pastedCsvData, setPastedCsvData] = useState('');
+
+  // Dynamically load standard + custom products
+  const [allProducts, setAllProducts] = useState(() => {
+    try {
+      const custom = JSON.parse(localStorage.getItem('rosabon_custom_products') || '[]');
+      return Array.from(new Set([...ROSABON_PRODUCTS, ...custom]));
+    } catch (e) {
+      return ROSABON_PRODUCTS;
+    }
+  });
+
+  useEffect(() => {
+    const handleProductsUpdated = () => {
+      try {
+        const custom = JSON.parse(localStorage.getItem('rosabon_custom_products') || '[]');
+        setAllProducts(Array.from(new Set([...ROSABON_PRODUCTS, ...custom])));
+      } catch (e) {}
+    };
+    window.addEventListener('rosabon_products_updated', handleProductsUpdated);
+    return () => window.removeEventListener('rosabon_products_updated', handleProductsUpdated);
+  }, []);
 
   // Quick RM Form State
   const [formData, setFormData] = useState({
@@ -518,7 +539,7 @@ export default function CaptureModule({ vocData, onAddVoCItem, onBulkAdd, defaul
                   onChange={e => setFormData({ ...formData, loanProduct: e.target.value })}
                   className="input-clean"
                 >
-                  {ROSABON_PRODUCTS.map(p => (
+                  {allProducts.map(p => (
                     <option key={p} value={p}>{p}</option>
                   ))}
                 </select>

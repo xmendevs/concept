@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Search, 
   AlertTriangle, 
@@ -31,7 +31,25 @@ export default function ExplorerModule({ vocData, selectedItem, onSelectItem, on
   const [productFilter, setProductFilter] = useState('all');
   const [churnFilter, setChurnFilter] = useState(false);
 
-  const availableProducts = Array.from(new Set([...ROSABON_PRODUCTS, ...vocData.map(d => d.loanProduct).filter(Boolean)]));
+  const [productsVer, setProductsVer] = useState(0);
+
+  useEffect(() => {
+    const handleUpdate = () => setProductsVer(v => v + 1);
+    window.addEventListener('rosabon_products_updated', handleUpdate);
+    return () => window.removeEventListener('rosabon_products_updated', handleUpdate);
+  }, []);
+
+  const availableProducts = useMemo(() => {
+    const set = new Set(ROSABON_PRODUCTS);
+    try {
+      const custom = JSON.parse(localStorage.getItem('rosabon_custom_products') || '[]');
+      custom.forEach(c => set.add(c));
+    } catch (e) {}
+    vocData.forEach(d => {
+      if (d.loanProduct) set.add(d.loanProduct);
+    });
+    return Array.from(set);
+  }, [vocData, productsVer]);
 
   // Filter Logic
   const filtered = vocData.filter(item => {

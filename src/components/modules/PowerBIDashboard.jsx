@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   BarChart3, 
   PieChart, 
@@ -34,6 +34,13 @@ export default function PowerBIDashboard({ vocData = [] }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showDaxModal, setShowDaxModal] = useState(false);
   const [exportNotice, setExportNotice] = useState('');
+  const [productsVer, setProductsVer] = useState(0);
+
+  useEffect(() => {
+    const handleUpdate = () => setProductsVer(v => v + 1);
+    window.addEventListener('rosabon_products_updated', handleUpdate);
+    return () => window.removeEventListener('rosabon_products_updated', handleUpdate);
+  }, []);
 
   // Slicer Filter Logic
   const filteredData = useMemo(() => {
@@ -74,14 +81,18 @@ export default function PowerBIDashboard({ vocData = [] }) {
     return `₦${num.toLocaleString()}`;
   };
 
-  // Dynamic Products List (Analyzes existing 5 or ANY newly imported products)
+  // Dynamic Products List (Analyzes existing 5 or ANY newly registered/imported products)
   const availableProducts = useMemo(() => {
     const set = new Set(ROSABON_PRODUCTS);
+    try {
+      const custom = JSON.parse(localStorage.getItem('rosabon_custom_products') || '[]');
+      custom.forEach(c => set.add(c));
+    } catch (e) {}
     vocData.forEach(d => {
       if (d.loanProduct) set.add(d.loanProduct);
     });
     return Array.from(set);
-  }, [vocData]);
+  }, [vocData, productsVer]);
 
   // Product-Level Performance Metrics
   const productMetrics = useMemo(() => {
@@ -108,7 +119,7 @@ export default function PowerBIDashboard({ vocData = [] }) {
         exposure: pExposure
       };
     });
-  }, [vocData]);
+  }, [vocData, availableProducts]);
 
   // Departmental SLA & CES Mapping
   const deptMetrics = [
