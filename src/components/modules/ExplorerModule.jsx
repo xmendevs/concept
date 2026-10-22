@@ -16,7 +16,10 @@ import {
   MessageSquare,
   Target,
   Sparkles,
-  CheckCircle2
+  CheckCircle2,
+  Trash2,
+  RotateCcw,
+  Plus
 } from 'lucide-react';
 import { DEPARTMENTS, ROSABON_PRODUCTS } from '../../data/mockData';
 import CompetitorRadar from './CompetitorRadar';
@@ -24,7 +27,17 @@ import PersonaStudio from './PersonaStudio';
 import ProductStrategyHub from './ProductStrategyHub';
 import AdaptiveLearnerHub from './AdaptiveLearnerHub';
 
-export default function ExplorerModule({ vocData, selectedItem, onSelectItem, onCloseDrawer, onNavigateToCapture, onNavigateToReports }) {
+export default function ExplorerModule({ 
+  vocData, 
+  selectedItem, 
+  onSelectItem, 
+  onCloseDrawer, 
+  onDeleteItem,
+  onClearAll,
+  onRestoreSamples,
+  onNavigateToCapture, 
+  onNavigateToReports 
+}) {
   const [explorerTab, setExplorerTab] = useState('verbatims'); // 'verbatims' | 'competitor' | 'personas' | 'strategies' | 'adaptive'
   const [search, setSearch] = useState('');
   const [deptFilter, setDeptFilter] = useState('all');
@@ -133,6 +146,35 @@ export default function ExplorerModule({ vocData, selectedItem, onSelectItem, on
 
     setExportNotice(`Successfully exported ${filtered.length} customer records to CSV! File downloaded.`);
     setTimeout(() => setExportNotice(''), 4500);
+  };
+
+  // INDIVIDUAL ROW DELETION HANDLER
+  const handleDeleteCard = (e, item) => {
+    e.stopPropagation();
+    if (window.confirm(`Delete transaction row "${item.id} - ${item.customerName}"?\n\nLoan Product: ${item.loanProduct}\nExposure: ${item.loanAmount}\n\nThis record will be permanently purged from the VoC repository.`)) {
+      if (onDeleteItem) {
+        onDeleteItem(item.id);
+      }
+      setExportNotice(`Record ${item.id} (${item.customerName}) removed successfully.`);
+      setTimeout(() => setExportNotice(''), 4000);
+    }
+  };
+
+  // DRAWER ROW DELETION HANDLER
+  const handleDeleteFromDrawer = () => {
+    if (!selectedItem) return;
+    if (window.confirm(`Delete transaction row "${selectedItem.id} - ${selectedItem.customerName}"?\n\nThis row will be purged from the VoC repository.`)) {
+      const id = selectedItem.id;
+      const name = selectedItem.customerName;
+      if (onDeleteItem) {
+        onDeleteItem(id);
+      }
+      if (onCloseDrawer) {
+        onCloseDrawer();
+      }
+      setExportNotice(`Record ${id} (${name}) removed successfully.`);
+      setTimeout(() => setExportNotice(''), 4000);
+    }
   };
 
   return (
@@ -376,18 +418,89 @@ export default function ExplorerModule({ vocData, selectedItem, onSelectItem, on
                 <span>Show Churn Risks Only</span>
               </label>
 
-              <button 
-                className="btn-clean btn-clean-secondary"
-                onClick={handleExportCsv}
-                style={{ marginLeft: 'auto', fontSize: '0.75rem', padding: '0.35rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}
-                title="Download filtered records as CSV spreadsheet"
-              >
-                <Download size={13} /> Export CSV ({filtered.length})
-              </button>
+              {/* Action Buttons: Export CSV + Clear All + Restore Defaults */}
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button 
+                  className="btn-clean btn-clean-secondary"
+                  onClick={handleExportCsv}
+                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}
+                  title="Download filtered records as CSV spreadsheet"
+                >
+                  <Download size={13} /> Export CSV ({filtered.length})
+                </button>
+
+                {vocData.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`Are you sure you want to clear ALL ${vocData.length} records in the app?\n\nThis will reset your repository to a blank state (0 rows). You can re-import or restore sample records anytime.`)) {
+                        if (onClearAll) onClearAll();
+                        setExportNotice('Workspace cleared. All transactions removed.');
+                        setTimeout(() => setExportNotice(''), 4000);
+                      }
+                    }}
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.1)',
+                      color: 'var(--accent-rose)',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      borderRadius: '6px',
+                      padding: '0.35rem 0.75rem',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      cursor: 'pointer'
+                    }}
+                    title="Clear all transaction rows across the app"
+                  >
+                    <Trash2 size={13} /> Clear All ({vocData.length})
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onRestoreSamples) onRestoreSamples();
+                      setExportNotice('Restored 10 default Rosabon benchmark records.');
+                      setTimeout(() => setExportNotice(''), 4000);
+                    }}
+                    style={{
+                      background: 'rgba(16, 185, 129, 0.12)',
+                      color: 'var(--accent-emerald)',
+                      border: '1px solid rgba(16, 185, 129, 0.3)',
+                      borderRadius: '6px',
+                      padding: '0.35rem 0.75rem',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      cursor: 'pointer'
+                    }}
+                    title="Restore default sample records"
+                  >
+                    <RotateCcw size={13} /> Restore Defaults (10)
+                  </button>
+                )}
+              </div>
             </div>
 
             {exportNotice && (
-              <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid var(--accent-teal)', color: 'var(--accent-teal)', padding: '0.5rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.5rem' }}>
+              <div style={{ 
+                background: exportNotice.includes('removed') || exportNotice.includes('cleared') 
+                  ? 'rgba(239, 68, 68, 0.12)' 
+                  : 'rgba(16, 185, 129, 0.12)', 
+                border: `1px solid ${exportNotice.includes('removed') || exportNotice.includes('cleared') ? 'var(--accent-rose)' : 'var(--accent-teal)'}`, 
+                color: exportNotice.includes('removed') || exportNotice.includes('cleared') ? 'var(--accent-rose)' : 'var(--accent-teal)', 
+                padding: '0.5rem 0.75rem', 
+                borderRadius: '6px', 
+                fontSize: '0.75rem', 
+                fontWeight: 600, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.4rem', 
+                marginTop: '0.5rem' 
+              }}>
                 <CheckCircle2 size={14} /> {exportNotice}
               </div>
             )}
@@ -403,15 +516,51 @@ export default function ExplorerModule({ vocData, selectedItem, onSelectItem, on
             </div>
 
             {filtered.length === 0 ? (
-              <div className="module-card" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No feedback matched your filter selection.</p>
-                <button 
-                  className="btn-clean btn-clean-secondary"
-                  onClick={() => { setSearch(''); setDeptFilter('all'); setSentimentFilter('all'); setChurnFilter(false); }}
-                  style={{ marginTop: '1rem', fontSize: '0.8rem' }}
-                >
-                  Reset Filters
-                </button>
+              <div className="module-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto' }}>
+                  <Layers size={24} color="var(--accent-primary)" />
+                </div>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.35rem' }}>
+                  {vocData.length === 0 ? 'Workspace is Empty (0 Records)' : 'No Matching Feedback Found'}
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', maxWidth: '440px', margin: '0 auto 1.25rem auto' }}>
+                  {vocData.length === 0 
+                    ? 'All transactions have been cleared. You have a clean slate! You can log new notes in Intake, drag & drop an Excel/CSV file, or restore default sample records.'
+                    : 'No feedback matched your active search and filter selection. Try resetting filters or searching another keyword.'
+                  }
+                </p>
+                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  {vocData.length === 0 ? (
+                    <>
+                      <button 
+                        className="btn-clean btn-clean-primary"
+                        onClick={onNavigateToCapture}
+                        style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                      >
+                        <Plus size={14} /> Intake / Upload CSV
+                      </button>
+                      <button 
+                        className="btn-clean btn-clean-secondary"
+                        onClick={() => {
+                          if (onRestoreSamples) onRestoreSamples();
+                          setExportNotice('Restored 10 default Rosabon VoC records.');
+                          setTimeout(() => setExportNotice(''), 4000);
+                        }}
+                        style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                      >
+                        <RotateCcw size={14} /> Restore Sample Benchmark Records
+                      </button>
+                    </>
+                  ) : (
+                    <button 
+                      className="btn-clean btn-clean-secondary"
+                      onClick={() => { setSearch(''); setDeptFilter('all'); setSentimentFilter('all'); setChurnFilter(false); setProductFilter('all'); }}
+                      style={{ fontSize: '0.8rem' }}
+                    >
+                      Reset Filters
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
               filtered.map(item => {
@@ -465,6 +614,39 @@ export default function ExplorerModule({ vocData, selectedItem, onSelectItem, on
                         <span className="badge-clean badge-blue">
                           NPS {item.npsScore}/10
                         </span>
+
+                        {/* Delete Single Row Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteCard(e, item)}
+                          style={{
+                            background: 'rgba(239, 68, 68, 0.08)',
+                            border: '1px solid rgba(239, 68, 68, 0.25)',
+                            color: 'var(--accent-rose)',
+                            borderRadius: '6px',
+                            padding: '0.2rem 0.5rem',
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            cursor: 'pointer',
+                            marginLeft: '0.25rem',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title="Delete this transaction row permanently"
+                          onMouseEnter={e => {
+                            e.currentTarget.style.background = 'var(--accent-rose)';
+                            e.currentTarget.style.color = '#ffffff';
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)';
+                            e.currentTarget.style.color = 'var(--accent-rose)';
+                          }}
+                        >
+                          <Trash2 size={12} />
+                          <span>Delete</span>
+                        </button>
                       </div>
                     </div>
 
@@ -615,19 +797,42 @@ export default function ExplorerModule({ vocData, selectedItem, onSelectItem, on
 
           <div style={{ background: 'var(--bg-surface-elevated)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
             <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.4rem' }}>
-              Action Escalation:
+              Action Escalation & Record Management:
             </span>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <span>Assigned Lead:</span>
               <strong style={{ color: 'var(--text-primary)' }}>{selectedItem.actionOwner}</strong>
             </div>
-            <button 
-              className="btn-clean btn-clean-primary"
-              onClick={() => { alert(`Escalated ${selectedItem.id} to ${selectedItem.actionOwner}.`); onCloseDrawer(); }}
-              style={{ width: '100%', fontSize: '0.8rem' }}
-            >
-              Escalate to Action Lead
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button 
+                className="btn-clean btn-clean-primary"
+                onClick={() => { alert(`Escalated ${selectedItem.id} to ${selectedItem.actionOwner}.`); onCloseDrawer(); }}
+                style={{ flex: 1, fontSize: '0.8rem' }}
+              >
+                Escalate to Action Lead
+              </button>
+              <button 
+                type="button"
+                onClick={handleDeleteFromDrawer}
+                style={{
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  color: 'var(--accent-rose)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: '6px',
+                  padding: '0.55rem 0.85rem',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Delete this transaction row permanently"
+              >
+                <Trash2 size={14} /> Delete
+              </button>
+            </div>
           </div>
 
         </div>

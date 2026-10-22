@@ -78,6 +78,18 @@ export default function App() {
     setVocData([...newBatch, ...vocData]);
   };
 
+  const handleDeleteVoCItem = (id) => {
+    setVocData(prev => prev.filter(item => item.id !== id));
+    if (selectedItem?.id === id) {
+      setSelectedItem(null);
+    }
+  };
+
+  const handleClearAllVoC = () => {
+    setVocData([]);
+    setSelectedItem(null);
+  };
+
   const handleSelectVoC = (item) => {
     setSelectedItem(item);
     setActiveModule('explorer');
@@ -142,6 +154,9 @@ export default function App() {
               vocData={filteredByMonth}
               onAddVoCItem={handleAddVoCItem}
               onBulkAdd={handleBulkAdd}
+              onDeleteVoCItem={handleDeleteVoCItem}
+              onClearAll={handleClearAllVoC}
+              onRestoreSamples={handleRestoreSamples}
             />
           )}
 
@@ -151,6 +166,9 @@ export default function App() {
               selectedItem={selectedItem}
               onSelectItem={setSelectedItem}
               onCloseDrawer={() => setSelectedItem(null)}
+              onDeleteItem={handleDeleteVoCItem}
+              onClearAll={handleClearAllVoC}
+              onRestoreSamples={handleRestoreSamples}
               onNavigateToCapture={() => setActiveModule('capture')}
               onNavigateToReports={() => setActiveModule('reports')}
             />

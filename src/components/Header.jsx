@@ -150,6 +150,16 @@ export default function Header({
           >
             <Calendar size={13} color="var(--accent-primary)" />
             <span>{activeMonth}</span>
+            <span style={{ 
+              background: 'var(--bg-surface-subtle)', 
+              color: 'var(--accent-primary)', 
+              padding: '0.1rem 0.45rem', 
+              borderRadius: '10px', 
+              fontSize: '0.65rem', 
+              fontWeight: 700 
+            }}>
+              {vocCount}
+            </span>
             <ChevronDown size={12} color="var(--text-muted)" />
           </button>
 

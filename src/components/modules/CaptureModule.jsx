@@ -19,11 +19,21 @@ import {
   Zap,
   Link2,
   Globe,
-  Database
+  Database,
+  Trash2,
+  RotateCcw
 } from 'lucide-react';
 import { DEPARTMENTS, ROSABON_PRODUCTS, THEMES } from '../../data/mockData';
 
-export default function CaptureModule({ vocData, onAddVoCItem, onBulkAdd, defaultSubTab = 'form' }) {
+export default function CaptureModule({ 
+  vocData = [], 
+  onAddVoCItem, 
+  onBulkAdd, 
+  onDeleteVoCItem,
+  onClearAll,
+  onRestoreSamples,
+  defaultSubTab = 'form' 
+}) {
   const [activeMode, setActiveMode] = useState(defaultSubTab); // 'form' | 'upload' | 'sheets' | 'sanitizer' | 'health'
 
   // GOOGLE SHEETS & DRIVE SYNC STATE
@@ -707,6 +717,78 @@ export default function CaptureModule({ vocData, onAddVoCItem, onBulkAdd, defaul
               </button>
             );
           })}
+        </div>
+      </div>
+
+      {/* Central Repository Memory & Reset Bar */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: '8px',
+        padding: '0.65rem 1rem',
+        fontSize: '0.8rem',
+        flexWrap: 'wrap',
+        gap: '0.5rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
+          <Database size={15} color="var(--accent-primary)" />
+          <span>Active VoC Repository: <strong style={{ color: 'var(--text-primary)' }}>{vocData.length} records</strong> indexed in memory & localStorage.</span>
+        </div>
+        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+          {vocData.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm(`Clear all ${vocData.length} records across the app?\n\nThis will reset your repository to 0 rows for clean testing.`)) {
+                  if (onClearAll) onClearAll();
+                  setNotification('All repository records cleared. Ready for fresh intake.');
+                  setTimeout(() => setNotification(''), 4000);
+                }
+              }}
+              style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                color: 'var(--accent-rose)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
+                borderRadius: '6px',
+                padding: '0.3rem 0.65rem',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.3rem'
+              }}
+              title="Clear all records to start fresh"
+            >
+              <Trash2 size={13} /> Clear App ({vocData.length})
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              if (onRestoreSamples) onRestoreSamples();
+              setNotification('Restored default Rosabon benchmark dataset (10 records).');
+              setTimeout(() => setNotification(''), 4000);
+            }}
+            style={{
+              background: 'var(--bg-surface-elevated)',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '6px',
+              padding: '0.3rem 0.65rem',
+              fontSize: '0.75rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.3rem'
+            }}
+            title="Restore default benchmark records"
+          >
+            <RotateCcw size={13} /> Restore Defaults
+          </button>
         </div>
       </div>
 
