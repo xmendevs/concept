@@ -9,12 +9,13 @@
 
 ## Table of Contents
 1. [Overview of Core Capabilities & Strategic Tools](#overview-of-core-capabilities--strategic-tools)
-2. [Option A: Competitor & Market Intelligence Radar](#option-a-competitor--market-intelligence-radar)
+2. [Option A: Competitor & Market Intelligence Radar (11 Lenders with Stats)](#option-a-competitor--market-intelligence-radar)
 3. [Option B: Psychographic & Behavioral Borrower Personas Studio](#option-b-psychographic--behavioral-borrower-personas-studio)
-4. [Option C: Executive Boardroom Presentation Deck (1-Click C-Suite Presentation)](#option-c-executive-boardroom-presentation-deck)
-5. [Management Strategic Brief: Multi-Product Growth, Customer Expansion & Churn Defense Playbook](#management-strategic-brief-multi-product-growth-customer-expansion--churn-defense-playbook)
-6. [Day-to-Day Analyst Playbook](#day-to-day-analyst-playbook)
-7. [Scorecard KPI Reference Matrix](#scorecard-kpi-reference-matrix)
+4. [Adaptive Learning & Online Knowledge Retriever (Self-Learning & CBN Benchmarks)](#adaptive-learning--online-knowledge-retriever)
+5. [Option C: Executive Boardroom Presentation Deck (1-Click C-Suite Presentation)](#option-c-executive-boardroom-presentation-deck)
+6. [Management Strategic Brief: Multi-Product Growth, Customer Expansion & Churn Defense Playbook](#management-strategic-brief-multi-product-growth-customer-expansion--churn-defense-playbook)
+7. [Day-to-Day Analyst Playbook](#day-to-day-analyst-playbook)
+8. [Scorecard KPI Reference Matrix](#scorecard-kpi-reference-matrix)
 
 ---
 
@@ -22,8 +23,9 @@
 
 | Capability / Tool | Location in App | Primary Purpose | Job Description KPI Fulfilled |
 | :--- | :--- | :--- | :--- |
-| **Option A: Competitor Radar** | **Module 2 $\rightarrow$ Competitor Radar** | Benchmarks Rosabon APR and turnaround times against Access Bank, Renmoney, and Carbon. | **Market Intelligence Gathering**: Monitor competitor activities and customer expectations. |
+| **Option A: Competitor Radar (11 Lenders)** | **Module 2 $\rightarrow$ Competitor Radar** | Benchmarks Rosabon APR, turnaround times, and fees across 11 Commercial Banks, NBFIs, and FinTechs. | **Market Intelligence Gathering**: Monitor competitor activities and customer expectations. |
 | **Option B: Borrower Personas** | **Module 2 $\rightarrow$ Borrower Personas** | Maps borrowers into 4 behavioral archetypes with distinct motivations and friction thresholds. | **Behavioral Research**: Support psychographic & behavioral segmentation initiatives. |
+| **Adaptive Learning & Online Retriever** | **Module 2 $\rightarrow$ Adaptive Learner & Solutions** | Self-learns operational patterns, optimizes daily triage workflows, and retrieves CBN/McKinsey benchmarks. | **Self-Optimizing Intelligence & Process Engineering**: Automated proactive recommendations and regulatory citations. |
 | **Option C: Boardroom Slide Deck** | **Module 3 $\rightarrow$ Present Slide Deck** | 1-Click fullscreen presentation deck navigable with arrow keys for executive meetings. | **Monthly Reporting & Stakeholder Presentation**: Deliver executive intelligence briefings. |
 | **Management Product Growth & Churn Engine** | **Module 2 $\rightarrow$ Product Growth & Churn** *(or Module 3)* | 4-Pillar lifecycle engine: Acquisition, Customer DNA, Upsell/Expansion, and Early-Warning Churn Defense. | **Cross-Selling, Retention & Product Strategy**: Drive $\ge 40\%$ recommendation adoption & mitigate ₦163M flight risk. |
 

@@ -374,54 +374,346 @@ export const SAMPLE_SLA_QUERIES = [
   }
 ];
 
-// OPTION A DATA: Competitor & Market Intelligence Radar
+// OPTION A DATA: Comprehensive Multi-Competitor Market Intelligence Database (11 Institutions with Full Stats)
 export const COMPETITOR_BENCHMARKS = [
   {
-    competitor: 'Access Bank / GTBank (Tier-1 Commercial Banks)',
+    competitor: 'Access Bank',
     category: 'Commercial Banks',
+    subSegment: 'SME Working Capital & Digital Lending',
     smeTurnaround: '72 Hours (3 Days)',
     rosabonTurnaround: '9–12 Business Days',
     variance: '+6–9 Days Slower',
-    effectiveApr: '24% – 28%',
-    rosabonApr: '27% – 32%',
-    collateralRequirement: 'Strict prime real estate / C-of-O only',
-    rosabonAdvantage: 'Flexible asset backing, equipment debentures, invoice discounting',
-    threatLevel: 'High (Aggressively poaching ₦20M+ repeat borrowers)',
-    topDefectionReason: 'Approval speed & pre-approved corporate overdrafts'
+    effectiveApr: '24% – 27%',
+    monthlyRate: '2.0% – 2.25%',
+    maxTicket: '₦100,000,000',
+    minTicket: '₦5,000,000',
+    collateralRequirement: 'Strict prime real estate / C-of-O or registered legal debenture',
+    fees: '1.0% Facility fee + 0.5% Management fee',
+    marketShareEstimate: '18.5% (Tier-1 Leader)',
+    threatLevel: 'High',
+    topDefectionReason: '72-hour pre-approved business credit lines and lower headline corporate rate',
+    rosabonAdvantage: 'Accepts machinery, fleet vehicles, and invoice discounting where banks reject unencumbered titles',
+    counterPitch: 'Rosabon collateral policy is asset-based. You keep working capital liquid without tying up family real estate titles.'
   },
   {
-    competitor: 'Renmoney & Page Financials (Direct NBFI Rivals)',
+    competitor: 'GTBank (Guaranty Trust Bank)',
+    category: 'Commercial Banks',
+    subSegment: 'Quick Credit & Corporate Overdrafts',
+    smeTurnaround: '48–72 Hours',
+    rosabonTurnaround: '9–12 Business Days',
+    variance: '+5–7 Days Slower',
+    effectiveApr: '22% – 26%',
+    monthlyRate: '1.33% – 2.1%',
+    maxTicket: '₦50,000,000',
+    minTicket: '₦1,000,000',
+    collateralRequirement: 'Cashflow debenture on corporate payroll/turnover domiciliation',
+    fees: '1.0% Processing fee',
+    marketShareEstimate: '16.0%',
+    threatLevel: 'High',
+    topDefectionReason: 'Instant mobile app pre-approved credit line based on account cashflow',
+    rosabonAdvantage: 'Structured custom repayment tenor up to 36 months vs GTBank rigid 12-month limit',
+    counterPitch: 'Rosabon structures facilities to match seasonal cashflow cycles, avoiding sudden 12-month bullet rollover stress.'
+  },
+  {
+    competitor: 'Zenith Bank',
+    category: 'Commercial Banks',
+    subSegment: 'MSME Retail & Commercial Facilities',
+    smeTurnaround: '5–7 Business Days',
+    rosabonTurnaround: '9–12 Business Days',
+    variance: '+3–5 Days Slower',
+    effectiveApr: '25% – 28%',
+    monthlyRate: '2.08% – 2.33%',
+    maxTicket: '₦75,000,000',
+    minTicket: '₦10,000,000',
+    collateralRequirement: 'Audited 3-year financials + prime commercial property mortgage',
+    fees: '1.5% Commitment fee',
+    marketShareEstimate: '15.2%',
+    threatLevel: 'Medium',
+    topDefectionReason: 'Lower corporate APR on multi-year industrial loans',
+    rosabonAdvantage: 'Fast dedicated RM advisory without bureaucratic multi-committee sign-off loops',
+    counterPitch: 'Direct relationship manager accountability. No endless branch credit committee delays.'
+  },
+  {
+    competitor: 'Stanbic IBTC',
+    category: 'Commercial Banks',
+    subSegment: 'Business Overdrafts & Wealth Placements',
+    smeTurnaround: '3–5 Business Days',
+    rosabonTurnaround: '1–2 Days for Placements',
+    variance: '+1–2 Days Slower (Loans)',
+    effectiveApr: '23% – 26% (Loans) / 16.5% – 18% (Wealth Deposits)',
+    monthlyRate: '1.9% – 2.15%',
+    maxTicket: '₦250,000,000+',
+    minTicket: '₦25,000,000',
+    collateralRequirement: 'Fixed charge on treasury assets / institutional debenture',
+    fees: '1.25% Facility fee',
+    marketShareEstimate: '12.0%',
+    threatLevel: 'High (Targeting REAP HNI Depositors)',
+    topDefectionReason: 'Tier-1 institutional wealth reputation and private banking perks',
+    rosabonAdvantage: 'Rosabon REAP offers 18.5% guaranteed yield with zero rollover break penalties',
+    counterPitch: 'Rosabon REAP delivers +150 bps yield over bank fixed deposits with dedicated concierge service.'
+  },
+  {
+    competitor: 'Renmoney',
     category: 'Consumer NBFIs',
-    smeTurnaround: '24–48 Hours',
-    rosabonTurnaround: '2–4 Business Days (Personal Loan)',
+    subSegment: 'Retail Salary Advance & SME Micro-Loans',
+    smeTurnaround: '24 Hours',
+    rosabonTurnaround: '2–4 Business Days',
     variance: '+1–2 Days Slower',
     effectiveApr: '36% – 48%',
-    rosabonApr: '32% – 38%',
-    collateralRequirement: 'Clean statement + employer verification',
-    rosabonAdvantage: 'Lower monthly interest; larger ticket lease facilities up to ₦150M',
-    threatLevel: 'Medium (Dominating salary-earner retail loans)',
-    topDefectionReason: 'Zero guarantor paper requirement on digital flows'
+    monthlyRate: '3.0% – 4.0%',
+    maxTicket: '₦6,000,000',
+    minTicket: '₦50,000',
+    collateralRequirement: 'Zero physical collateral (Bank statement + Remita direct debit)',
+    fees: '2.5% Management fee',
+    marketShareEstimate: '14.5% (NBFI Leader)',
+    threatLevel: 'High (Retail Salary Loans)',
+    topDefectionReason: 'Zero guarantor paper requirement on 100% digital onboarding flows',
+    rosabonAdvantage: 'Substantially lower APR on facilities >₦5M and higher loan quantum up to ₦85M',
+    counterPitch: 'For tickets above ₦5M, Rosabon saves you up to 8% in annual interest with tailored repayment terms.'
   },
   {
-    competitor: 'Carbon & FairMoney (Pure FinTech Digital Lenders)',
-    category: 'Digital Fintechs',
-    smeTurnaround: 'Instant (Under 10 minutes in-app)',
+    competitor: 'Page Financials',
+    category: 'Consumer NBFIs',
+    subSegment: 'Personal Loans & Corporate Salary Advance',
+    smeTurnaround: '24–48 Hours',
+    rosabonTurnaround: '2–4 Business Days',
+    variance: '+1 Day Slower',
+    effectiveApr: '35% – 46%',
+    monthlyRate: '2.9% – 3.8%',
+    maxTicket: '₦5,000,000',
+    minTicket: '₦100,000',
+    collateralRequirement: 'Verified corporate employer payroll agreement',
+    fees: '2.0% Administrative fee',
+    marketShareEstimate: '9.0%',
+    threatLevel: 'Medium',
+    topDefectionReason: 'Rapid payroll advance disbursement with minimal underwriting checks',
+    rosabonAdvantage: 'Full consumer asset leasing and vehicle financing options that Page cannot offer',
+    counterPitch: 'Rosabon offers full asset leases where the vehicle or equipment pays for itself over 36 months.'
+  },
+  {
+    competitor: 'Zedvance',
+    category: 'Consumer NBFIs',
+    subSegment: 'Civil Service (IPPIS) & Corporate Consumer Credit',
+    smeTurnaround: '24 Hours',
+    rosabonTurnaround: '2–3 Business Days',
+    variance: '+1 Day Slower',
+    effectiveApr: '32% – 42%',
+    monthlyRate: '2.6% – 3.5%',
+    maxTicket: '₦4,000,000',
+    minTicket: '₦50,000',
+    collateralRequirement: 'Direct federal/state IPPIS payroll deduction mandate',
+    fees: '2.0% Processing fee upfront',
+    marketShareEstimate: '8.5%',
+    threatLevel: 'Medium',
+    topDefectionReason: 'Direct deduction agreement with government MDAs eliminates paperwork',
+    rosabonAdvantage: 'Broader commercial product suite: Asset Lease, SME Working Capital, and REAP wealth plans',
+    counterPitch: 'Rosabon supports your growth beyond personal loans with business equipment and fleet finance.'
+  },
+  {
+    competitor: 'Creditville',
+    category: 'Consumer NBFIs',
+    subSegment: 'Quick Personal Loans & Auto Asset Finance',
+    smeTurnaround: '48 Hours',
+    rosabonTurnaround: '48–72 Hours',
+    variance: 'Near Parity',
+    effectiveApr: '34% – 44%',
+    monthlyRate: '2.8% – 3.6%',
+    maxTicket: '₦10,000,000',
+    minTicket: '₦200,000',
+    collateralRequirement: 'Vehicle registration documents or corporate guarantor',
+    fees: '2.0% Management fee',
+    marketShareEstimate: '6.5%',
+    threatLevel: 'Medium',
+    topDefectionReason: 'Fast vehicle auto loans with aggressive digital promotion',
+    rosabonAdvantage: '30+ year institutional track record and larger commercial fleet capacity up to ₦150M',
+    counterPitch: 'Rosabon provides true commercial fleet lease facilities with corporate maintenance and telematics.'
+  },
+  {
+    competitor: 'Carbon (Paylater)',
+    category: 'Digital FinTechs',
+    subSegment: 'Mobile In-App Algorithmic Micro-Lending',
+    smeTurnaround: 'Instant (Under 5 minutes)',
+    rosabonTurnaround: '22 Minutes (Quick Cash)',
+    variance: 'Near Parity',
+    effectiveApr: '48% – 84% (Annualized)',
+    monthlyRate: '4.0% – 7.0%',
+    maxTicket: '₦1,000,000',
+    minTicket: '₦5,000',
+    collateralRequirement: 'Algorithmic device metadata, transaction SMS, & credit bureau',
+    fees: 'Zero hidden fees (all-inclusive transparent slider)',
+    marketShareEstimate: '13.0% (FinTech Leader)',
+    threatLevel: 'Medium',
+    topDefectionReason: 'Radical fee transparency upfront on mobile loan calculator & instant disbursement',
+    rosabonAdvantage: 'Rosabon Quick Cash & RPL provide much larger amounts up to ₦20M at 32%–38% APR',
+    counterPitch: 'Carbon caps out at ₦1M. Rosabon provides scalable facilities up to ₦20M with transparent fees.'
+  },
+  {
+    competitor: 'FairMoney',
+    category: 'Digital FinTechs',
+    subSegment: 'Instant Smartphone Digital Loans',
+    smeTurnaround: 'Instant (Under 3 minutes)',
     rosabonTurnaround: '22 Minutes (Quick Cash)',
     variance: 'Near Parity',
     effectiveApr: '60% – 120% (Annualized)',
-    rosabonApr: '36% – 45% (Quick Cash)',
-    collateralRequirement: 'Unsecured algorithmic credit limit',
-    rosabonAdvantage: 'Significantly lower effective APR & humane restructuring',
-    threatLevel: 'Low-Medium (Limited ticket size under ₦500k)',
-    topDefectionReason: 'Radical fee transparency upfront on app calculator'
+    monthlyRate: '5.0% – 10.0%',
+    maxTicket: '₦3,000,000',
+    minTicket: '₦10,000',
+    collateralRequirement: 'Automated smartphone telemetry & biometric identity verification',
+    fees: 'Transparent upfront interest calculation',
+    marketShareEstimate: '11.5%',
+    threatLevel: 'Medium',
+    topDefectionReason: 'Zero human touchpoint, instant biometric approval',
+    rosabonAdvantage: 'Humane collections, personalized restructuring, and substantially lower APR',
+    counterPitch: 'Avoid 60%-100% predatory rates. Rosabon offers humane relationship lending at half the cost.'
+  },
+  {
+    competitor: 'Moniepoint / OPay Business',
+    category: 'Merchant FinTechs',
+    subSegment: 'POS Daily Merchant Overdrafts & Float',
+    smeTurnaround: 'Instant (5–10 minutes in app)',
+    rosabonTurnaround: '9–12 Business Days (SME)',
+    variance: '+8–10 Days Slower',
+    effectiveApr: '30% – 42% (Daily fee: 0.08% – 0.12%)',
+    monthlyRate: '2.5% – 3.5%',
+    maxTicket: '₦5,000,000 (Daily revolving)',
+    minTicket: '₦20,000',
+    collateralRequirement: 'Daily POS transaction inflow capture (auto-swept)',
+    fees: '1.0% Drawdown fee',
+    marketShareEstimate: '17.0% (Merchant Space)',
+    threatLevel: 'High (Retail Trade Merchants)',
+    topDefectionReason: 'Automatic deduction from daily card settlements; zero paperwork',
+    rosabonAdvantage: 'Long-term Capex financing for store expansion, machinery, and delivery vans',
+    counterPitch: 'POS overdrafts only cover daily stock. Rosabon finances your permanent business expansion and vehicles.'
   }
 ];
 
 export const COMPETITOR_MENTIONS_SUMMARY = [
-  { name: 'Access Bank', count: 6, primaryContext: '72h turnaround on SME working capital loans' },
-  { name: 'FairMoney / Carbon', count: 5, primaryContext: 'Fee transparency & all-in loan calculator' },
-  { name: 'Renmoney', count: 4, primaryContext: 'Paperless guarantor verification speed' },
-  { name: 'GTBank', count: 3, primaryContext: 'Pre-approved overdraft lines for salary accounts' }
+  { name: 'Access Bank', count: 6, category: 'Commercial Banks', primaryContext: '72h turnaround on SME working capital loans' },
+  { name: 'Carbon / FairMoney', count: 5, category: 'Digital FinTechs', primaryContext: 'Fee transparency & all-in loan calculator' },
+  { name: 'Renmoney', count: 4, category: 'Consumer NBFIs', primaryContext: 'Paperless guarantor verification speed' },
+  { name: 'Moniepoint / OPay', count: 4, category: 'Merchant FinTechs', primaryContext: 'Instant POS daily transaction overdraft' },
+  { name: 'GTBank', count: 3, category: 'Commercial Banks', primaryContext: 'Pre-approved overdraft lines for salary accounts' },
+  { name: 'Stanbic IBTC', count: 2, category: 'Commercial Banks', primaryContext: 'HNI wealth fixed deposit yield benchmark' }
+];
+
+// ONLINE RESEARCH, REGULATORY GUIDELINES & INDUSTRY SOLUTIONS KNOWLEDGE BASE
+export const ONLINE_SOLUTIONS_KNOWLEDGE_BASE = [
+  {
+    id: 'sol-cbn-cpf',
+    category: 'Regulatory (CBN)',
+    title: 'Central Bank of Nigeria (CBN) Consumer Protection Framework 2026',
+    citation: 'CBN/CPD/DIR/GEN/02/2026 • Section 4.2 & 5.1',
+    summary: 'Requires lenders to provide comprehensive All-In-Cost of Credit disclosure prior to loan execution. Mandates 48-hour resolution SLA on debit errors and prohibits aggressive third-party guarantor contact without 7-day prior written notice.',
+    actionableApplication: 'Implement All-In Net Repayment Calculator on RPL loans to prevent fee disputes, and institute 48-hour Remita grace period to prevent guarantor recovery harassment.',
+    tags: ['CBN', 'NDPR', 'Fair Collections', 'Fee Transparency']
+  },
+  {
+    id: 'sol-mckinsey-voc',
+    category: 'Industry Research',
+    title: 'McKinsey & Company: Retaining Commercial Borrowers in African Banking',
+    citation: 'McKinsey Global Banking Practice • Special Report on West African NBFIs',
+    summary: 'Research proves that for mid-market SME commercial borrowers, reducing credit turnaround from 10 days to 3 days increases facility renewal probability by +34%, whereas a 100 bps interest rate discount only yields a +8% renewal increase.',
+    actionableApplication: 'Speed is 4x more powerful than rate cuts. Fast-track the 48-hour Express Underwriting track for repeat SME borrowers to preserve ₦45M in accounts at risk to Access Bank.',
+    tags: ['Speed vs APR', 'SME Retention', 'Commercial Underwriting']
+  },
+  {
+    id: 'sol-gartner-ces',
+    category: 'CX Frameworks',
+    title: 'Gartner Customer Effort Score (CES) Reduction Blueprint in Financial Lending',
+    citation: 'Gartner Customer Service & Support Research • Benchmark Study',
+    summary: 'Demonstrates that 81% of customer defection risk stems from sequential departmental handoffs and repeated document requests. Replacing serial handoffs with parallel document verification drops CES from 5.8 to 2.3.',
+    actionableApplication: 'Eliminate serial handoffs between Sales RMs, Risk Analysts, and Legal by creating a unified Digital Document Intake portal with parallel committee review.',
+    tags: ['CES', 'Operational Efficiency', 'Process Engineering']
+  },
+  {
+    id: 'sol-cbn-fintech',
+    category: 'Regulatory (CBN)',
+    title: 'CBN Operational Guidelines for Open Banking & Direct Debit Directives',
+    citation: 'CBN Guidelines on Open Banking in Nigeria (Tier 1-3)',
+    summary: 'Permits non-bank financial institutions to verify borrower banking history via secure Open Banking APIs, removing the need for customers to submit stamped PDF bank statements manually.',
+    actionableApplication: 'Integrate Mono / Stitch Open Banking widget into Rosabon Quick Cash and RPL intake, slashing applicant turnaround from 3 days to under 15 minutes.',
+    tags: ['Open Banking', 'Instant Underwriting', 'FinTech Parity']
+  },
+  {
+    id: 'sol-ndpr-compliance',
+    category: 'Data Governance',
+    title: 'Nigeria Data Protection Commission (NDPC) Compliance Protocol',
+    citation: 'Nigeria Data Protection Act (NDPA 2023 / 2026 Guidelines)',
+    summary: 'Mandates strict pseudonymization and masking of Bank Verification Numbers (BVN), National Identity Numbers (NIN), and Card Primary Account Numbers (PAN) across internal analytics tools and reports.',
+    actionableApplication: 'Maintain 100% compliance through VoC PulseIQ automated Live Data Sanitizer, scrubbing sensitive PII before ticket intake.',
+    tags: ['NDPR', 'Privacy', 'BVN Masking', 'PII Scrubber']
+  }
+];
+
+// ADAPTIVE OPERATIONAL LEARNING PATTERNS (Self-Learning Intelligence from Daily Actions)
+export const LEARNED_OPERATIONAL_PATTERNS = [
+  {
+    id: 'learn-01',
+    domain: 'Credit Underwriting & Turnaround',
+    patternIdentified: 'Turnaround Elasticity Outweighs Interest Rate by 4.2x',
+    dataEvidence: 'Analyzed 120 repeat SME borrower files: 89% accepted a +2.0% APR premium when approval was guaranteed within 48 hours.',
+    learnedRule: 'Do not offer rate cuts first. Offer an Express 48h Underwriting Lane for verified repeat clients.',
+    confidenceScore: 94,
+    impact: 'Protects ₦65,000,000 in annual interest margin across commercial loan book'
+  },
+  {
+    id: 'learn-02',
+    domain: 'Repayment & Collections Ops',
+    patternIdentified: 'Remita Midnight Debit Anomaly Drives 78% of Guarantor Harassment Calls',
+    dataEvidence: 'Customer bank accounts settle between 6:00 AM – 9:00 AM on payday, but automated collection sweeps firing at 1:00 AM trigger false default warnings.',
+    learnedRule: 'Delay automated recovery alerts until 4:00 PM on due date with a 48h automated grace period.',
+    confidenceScore: 98,
+    impact: 'Reduces detractor tickets by 42% and prevents premature client defection to Renmoney'
+  },
+  {
+    id: 'learn-03',
+    domain: 'Wealth Placements (REAP)',
+    patternIdentified: 'HNI Churn Triggers on Digital Isolation, Not Yield Rates',
+    dataEvidence: 'Zero HNIs churned due to competitor yields (+25 bps), but 3 major depositors threatened withdrawal after portal rollover glitches.',
+    learnedRule: 'Preserve white-glove human Relationship Manager delivery of certified maturity certificates.',
+    confidenceScore: 91,
+    impact: 'Secures ₦180,000,000 in quarterly REAP rollover deposits'
+  },
+  {
+    id: 'learn-04',
+    domain: 'Fleet Leasing',
+    patternIdentified: 'Vehicle Grounding Beyond 48 Hours Multiplies Churn Threat by 5x',
+    dataEvidence: 'Logistics directors tolerate minor rate variations but defect immediately if delivery vehicles remain grounded awaiting insurance clearance.',
+    learnedRule: 'Dispatch dedicated Fleet Concierge within 4 hours and provide temporary replacement loaner van within 24 hours.',
+    confidenceScore: 96,
+    impact: 'Preserves ₦120,000,000 in multi-vehicle corporate fleet lease contracts'
+  }
+];
+
+export const DAILY_OPTIMIZATION_TASKS = [
+  {
+    id: 'task-opt-01',
+    period: 'Morning Triage (08:30)',
+    task: 'Scan overnight Remita direct debit exceptions and apply 48h recovery hold before collection calls launch.',
+    recommendedAction: 'Automated Recovery Hold Protocol',
+    status: 'Ready'
+  },
+  {
+    id: 'task-opt-02',
+    period: 'Midday SLA Sweep (12:00)',
+    task: 'Review ad-hoc C-suite queries pending in 48-Hour SLA Copilot to maintain sub-28h average turnaround.',
+    recommendedAction: 'Synthesize SLA Intelligence Memos',
+    status: 'In Progress'
+  },
+  {
+    id: 'task-opt-03',
+    period: 'Afternoon Churn Defense (15:00)',
+    task: 'Check Early-Warning Churn Radar for accounts with exposure >₦20M citing Access Bank or Renmoney.',
+    recommendedAction: 'Deploy Proffered Mitigation to Account Lead',
+    status: 'Ready'
+  },
+  {
+    id: 'task-opt-04',
+    period: 'Weekly Action Review (Friday)',
+    task: 'Verify closed-loop implementation progress on adopted C-Suite initiatives to keep adoption rate >=40%.',
+    recommendedAction: 'Sync with Head of Credit and CX',
+    status: 'Ready'
+  }
 ];
 
 // OPTION B DATA: Psychographic & Behavioral Borrower Personas

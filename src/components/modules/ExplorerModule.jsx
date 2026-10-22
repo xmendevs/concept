@@ -14,15 +14,17 @@ import {
   Zap,
   Brain,
   MessageSquare,
-  Target
+  Target,
+  Sparkles
 } from 'lucide-react';
 import { DEPARTMENTS, ROSABON_PRODUCTS } from '../../data/mockData';
 import CompetitorRadar from './CompetitorRadar';
 import PersonaStudio from './PersonaStudio';
 import ProductStrategyHub from './ProductStrategyHub';
+import AdaptiveLearnerHub from './AdaptiveLearnerHub';
 
-export default function ExplorerModule({ vocData, selectedItem, onSelectItem, onCloseDrawer }) {
-  const [explorerTab, setExplorerTab] = useState('verbatims'); // 'verbatims' | 'competitor' | 'personas' | 'strategies'
+export default function ExplorerModule({ vocData, selectedItem, onSelectItem, onCloseDrawer, onNavigateToCapture, onNavigateToReports }) {
+  const [explorerTab, setExplorerTab] = useState('verbatims'); // 'verbatims' | 'competitor' | 'personas' | 'strategies' | 'adaptive'
   const [search, setSearch] = useState('');
   const [deptFilter, setDeptFilter] = useState('all');
   const [sentimentFilter, setSentimentFilter] = useState('all');
@@ -137,6 +139,25 @@ export default function ExplorerModule({ vocData, selectedItem, onSelectItem, on
             }}
           >
             <Target size={14} /> Product Growth & Churn
+          </button>
+
+          <button
+            onClick={() => setExplorerTab('adaptive')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.45rem 0.85rem',
+              borderRadius: '6px',
+              border: 'none',
+              background: explorerTab === 'adaptive' ? 'var(--accent-primary)' : 'transparent',
+              color: explorerTab === 'adaptive' ? '#ffffff' : 'var(--text-secondary)',
+              fontSize: '0.775rem',
+              fontWeight: explorerTab === 'adaptive' ? 700 : 500,
+              cursor: 'pointer'
+            }}
+          >
+            <Sparkles size={14} /> Adaptive Learner & Solutions
           </button>
         </div>
       </div>
@@ -388,6 +409,15 @@ export default function ExplorerModule({ vocData, selectedItem, onSelectItem, on
       {/* VIEW 4: PRODUCT GROWTH & CHURN DEFENSE ENGINE */}
       {explorerTab === 'strategies' && (
         <ProductStrategyHub />
+      )}
+
+      {/* VIEW 5: ADAPTIVE LEARNER & ONLINE SOLUTIONS ENGINE */}
+      {explorerTab === 'adaptive' && (
+        <AdaptiveLearnerHub 
+          vocData={vocData} 
+          onNavigateToCapture={onNavigateToCapture} 
+          onNavigateToReports={onNavigateToReports} 
+        />
       )}
 
       {/* SLIDE-OUT DETAIL DRAWER */}

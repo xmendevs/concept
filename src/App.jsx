@@ -150,6 +150,8 @@ export default function App() {
               selectedItem={selectedItem}
               onSelectItem={setSelectedItem}
               onCloseDrawer={() => setSelectedItem(null)}
+              onNavigateToCapture={() => setActiveModule('capture')}
+              onNavigateToReports={() => setActiveModule('reports')}
             />
           )}
 
