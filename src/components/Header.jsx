@@ -11,7 +11,8 @@ import {
   Calendar, 
   RotateCcw,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  BarChart3
 } from 'lucide-react';
 import { COMPANY_PROFILE } from '../data/mockData';
 
@@ -34,7 +35,8 @@ export default function Header({
     { id: 'capture', label: '1. Capture & Intake', icon: Inbox },
     { id: 'explorer', label: '2. Customer Voices', icon: Search },
     { id: 'reports', label: '3. Executive Reports', icon: FileText },
-    { id: 'tracker', label: '4. Actions & KPIs', icon: Target }
+    { id: 'tracker', label: '4. Actions & KPIs', icon: Target },
+    { id: 'powerbi', label: '5. PowerBI BI Studio', icon: BarChart3 }
   ];
 
   return (

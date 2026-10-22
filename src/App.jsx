@@ -4,6 +4,7 @@ import CaptureModule from './components/modules/CaptureModule';
 import ExplorerModule from './components/modules/ExplorerModule';
 import StudioModule from './components/modules/StudioModule';
 import TrackerModule from './components/modules/TrackerModule';
+import PowerBIDashboard from './components/modules/PowerBIDashboard';
 import { INITIAL_VOC_DATA } from './data/mockData';
 
 // Error Boundary to prevent any blank page crashes
@@ -161,6 +162,10 @@ export default function App() {
 
           {activeModule === 'tracker' && (
             <TrackerModule />
+          )}
+
+          {activeModule === 'powerbi' && (
+            <PowerBIDashboard vocData={filteredByMonth} />
           )}
         </ErrorBoundary>
       </main>
